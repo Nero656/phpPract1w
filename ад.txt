@@ -1,0 +1,99 @@
+<?php
+class Model_Auth extends Model
+{
+  private $_login = "admin"; //Устанавливаем логин
+  private $_password = "admin"; //Устанавливаем пароль
+
+
+      /**
+       * Проверяет, авторизован пользователь или нет
+       * Возвращает true если авторизован, иначе false
+       * @return boolean
+       */
+      public function isAuth() {
+          if (isset($_SESSION["is_auth"])) { //Если сессия существует
+              return $_SESSION["is_auth"]; //Возвращаем значение переменной сессии is_auth (хранит true если авторизован, false если не авторизован)
+          }
+          else return false; //Пользователь не авторизован, т.к. переменная is_auth не создана
+      }
+
+      /**
+       * Авторизация пользователя
+       * @param string $login
+       * @param string $passwors
+       */
+      public function auth($login, $passwors) {
+          if ($login == $this->_login && $passwors == $this->_password) { //Если логин и пароль введены правильно
+              $_SESSION["is_auth"] = true; //Делаем пользователя авторизованным
+              $_SESSION["login"] = $login; //Записываем в сессию логин пользователя
+              return true;
+          }
+          else { //Логин и пароль не подошел
+              $_SESSION["is_auth"] = false;
+              return false;
+          }
+      }
+
+      /**
+       * Метод возвращает логин авторизованного пользователя
+       */
+      public function getLogin() {
+          if ($this->isAuth()) { //Если пользователь авторизован
+              return $_SESSION["login"]; //Возвращаем логин, который записан в сессию
+          }
+      }
+
+
+      // public function out() {
+      //     $_SESSION = array(); //Очищаем сессию
+      //     session_destroy(); //Уничтожаем
+      // }
+
+
+}
+//файл 1
+
+
+
+    <?php
+
+    if (isset($_POST["login"]) && isset($_POST["password"])) { //Если логин и пароль были отправлены
+        if (!$auth->auth($_POST["login"], $_POST["password"])) { //Если логин и пароль введен не правильно
+          echo "<div class='container-12'>
+         <h2 class = 'text-center alert alert-danger'>Логин или пароль введен не правильно!</h2>
+         </div>";
+        }
+    }
+
+    if (isset($_POST["IsExit"])) { //Если нажата кнопка выхода
+        unset ($_SESSION['login']);
+        unset ($_SESSION['password']);
+        session_destroy();
+        header("Location: /main/index");//Редирект после выхода
+    }
+
+    ?>
+
+    <?php if ($_SESSION['login']) { // Если пользователь авторизован, приветствуем:
+        echo "<form method='post' action='' class = 'container-fluid'>";
+        echo "<div class ='container col-2'><h3>Здравствуйте, " . $auth->getLogin()."</h3>" ;
+        echo "<br/><br/><input type='submit' action='' method='post' name='IsExit'  value='Выйти' class ='form-control btn btn-dark'>
+        </div></form>"; //Показываем кнопку выход
+    }
+    else { //Если не авторизован, показываем форму ввода логина и пароля
+    ?>
+    <div class="container col-2">
+     <div class = "row-center">
+       <form method="post" action="" class = "container-fluid">
+           <label for="recipient-name" class="col-form-label">Логин:</label>
+           <input placeholder = "Логин" type = "text" name = "login" class = "form-control"
+           value="<?php echo (isset($_POST["login"])) ? $_POST["login"] : null; ?>">
+           <label for="recipient-name" class="col-form-label">Пароль:</label>
+           <input placeholder = "Пароль" name = "password" class = "form-control" type = "password"><br>
+           <input type="submit" value="Войти" class = "form-control btn btn-dark" />
+         </form>
+       </div>
+     </div>
+    <?php } ?>
+
+
